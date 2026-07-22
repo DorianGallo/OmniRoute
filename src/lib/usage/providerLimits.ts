@@ -965,11 +965,8 @@ export async function syncAllProviderLimits(
     return { connectionId: connection.id, cache };
   };
 
-  // OAuth connections are processed STRICTLY SEQUENTIALLY (chunk size 1) with a
-  // spacing gap so a single host never bursts simultaneous usage/refresh
-  // requests to the same upstream (anomaly/session-termination guard; see
-  // getProviderLimitsSyncSpacingMs). Local/API-key connections keep their fast
-  // in-chunk concurrent path, spaced BETWEEN chunks (#6916).
+  // OAuth: sequential (chunk 1) + spacing to avoid upstream bursts (#6916).
+  // API-key/local: concurrent in-chunk, spaced between chunks.
   const oauthConnections = connections.filter((c) => c.authType === "oauth");
   const otherConnections = connections.filter((c) => c.authType !== "oauth");
   const spacingMs = getProviderLimitsSyncSpacingMs();

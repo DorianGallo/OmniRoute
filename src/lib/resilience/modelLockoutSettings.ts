@@ -68,10 +68,15 @@ export function resolveModelLockoutSettings(
       max: 600_000,
     }
   );
+  // Ceiling must admit multi-day upstream quota resets (e.g. Antigravity
+  // "Resets in 92h/160h") when operators raise maxCooldownMs for #6863. The
+  // previous 1h hard max silently clamped those hints and re-broke lockout
+  // parity with the parsed reset text. Exponential backoff still uses the
+  // resolved (operator) max; only the allowed configuration range grows.
   const maxCooldownMs = Math.max(
     toInteger(raw.maxCooldownMs, DEFAULT_MODEL_LOCKOUT_SETTINGS.maxCooldownMs, {
       min: isTest ? 0 : 5_000,
-      max: 3_600_000,
+      max: 14 * 24 * 3600 * 1000, // 14d
     }),
     baseCooldownMs // cap must be >= base or exponential backoff is meaningless
   );
