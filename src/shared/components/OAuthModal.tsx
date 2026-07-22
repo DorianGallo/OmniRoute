@@ -1084,13 +1084,7 @@ export default function OAuthModal({
               <LinkifiedText text={error} />
             </p>
             <div className="flex gap-2">
-              <Button
-                onClick={() => {
-                  void startOAuthFlow();
-                }}
-                variant="secondary"
-                fullWidth
-              >
+              <Button onClick={() => void startOAuthFlow()} variant="secondary" fullWidth>
                 {t("tryAgain")}
               </Button>
               <Button onClick={handleClose} variant="ghost" fullWidth>
