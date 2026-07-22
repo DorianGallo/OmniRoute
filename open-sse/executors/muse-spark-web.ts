@@ -5,6 +5,7 @@ import WebSocket from "ws";
 import { BaseExecutor, mergeUpstreamExtraHeaders, type ExecuteInput } from "./base.ts";
 import { getRotatingApiKey } from "../services/apiKeyRotator.ts";
 import { prepareToolMessages, buildToolAwareResult } from "../translator/webTools.ts";
+import { sanitizeErrorMessage } from "../utils/error.ts";
 import {
   normalizeSessionCookieHeader,
   normalizeSessionCookieHeaders,
@@ -942,7 +943,9 @@ async function graphqlPost(
   } catch (err) {
     return {
       ok: false,
-      error: `${label} fetch failed: ${err instanceof Error ? err.message : String(err)}`,
+      error: `${label} fetch failed: ${sanitizeErrorMessage(
+        err instanceof Error ? err.message : String(err)
+      )}`,
     };
   }
 }
