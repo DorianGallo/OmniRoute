@@ -10,7 +10,7 @@ export const APIKEY_PROVIDERS_REGIONAL = {
     icon: "cloud",
     color: "#2468F2",
     textIcon: "BD",
-    website: "https://cloud.baidu.com/product/wenxinworkshop",
+    website: "https://cloud.baidu.com/product-s/qianfan_home",
     apiHint:
       "Use a Qianfan API key from Baidu AI Cloud. The default endpoint is OpenAI-compatible v2.",
   },
@@ -224,7 +224,7 @@ export const APIKEY_PROVIDERS_REGIONAL = {
     icon: "auto_awesome",
     color: "#2932E1",
     textIcon: "BD",
-    website: "https://yiyan.baidu.com",
+    website: "https://ernie.baidu.com/",
     hasFree: true,
     freeNote: "Free ERNIE Speed/Lite models. China's #2 LLM.",
     passthroughModels: true,
@@ -413,7 +413,9 @@ export const APIKEY_PROVIDERS_REGIONAL = {
     textIcon: "SL",
     website: "https://sea-lion.ai",
     hasFree: true,
-    freeNote: "Permanently free at 10 RPM — AI Singapore's Southeast-Asian models (Llama/Qwen/Gemma SEA-LION).",
-    authHint: "Sign in at sea-lion.ai with Google (no card, no region wall), create an API key, then paste it here.",
+    freeNote:
+      "Permanently free at 10 RPM — AI Singapore's Southeast-Asian models (Llama/Qwen/Gemma SEA-LION).",
+    authHint:
+      "Sign in at sea-lion.ai with Google (no card, no region wall), create an API key, then paste it here.",
   },
 };

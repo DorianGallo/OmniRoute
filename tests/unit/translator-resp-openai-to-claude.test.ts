@@ -105,12 +105,67 @@ test("OpenAI stream: internal reasoning replay placeholder stays hidden from Cla
   const result = flatten([placeholder, text]);
 
   assert.equal(
-    result.some((event) => event.type === "content_block_start" && event.content_block?.type === "thinking"),
+    result.some(
+      (event) => event.type === "content_block_start" && event.content_block?.type === "thinking"
+    ),
     false
   );
   assert.equal(result[0].type, "message_start");
   assert.equal(result[1].content_block.type, "text");
   assert.equal(result[2].delta.text, "Answer");
+});
+
+test("OpenAI stream: placeholder-only content bundled with finish_reason still emits the stop event (#8081 regression)", () => {
+  const state = createState();
+  // Start a real message with some text first.
+  const first = openaiToClaudeResponse(
+    {
+      id: "chatcmpl-2c",
+      model: "gpt-4.1",
+      choices: [{ index: 0, delta: { content: "Answer" }, finish_reason: null }],
+    },
+    state
+  );
+  // Final chunk carries the internal reasoning placeholder as ordinary content
+  // AND the finish_reason in the SAME chunk. The placeholder content must be
+  // suppressed, but the stop event must still fire (the pre-fix bare `return`
+  // dropped the finish entirely — this is the regression guard).
+  const final = openaiToClaudeResponse(
+    {
+      id: "chatcmpl-2c",
+      model: "gpt-4.1",
+      choices: [
+        {
+          index: 0,
+          delta: { content: "(prior reasoning summary unavailable)" },
+          finish_reason: "stop",
+        },
+      ],
+      usage: { prompt_tokens: 4, completion_tokens: 1, total_tokens: 5 },
+    },
+    state
+  );
+  const result = flatten([first, final]);
+
+  // The placeholder text is never emitted as a visible text delta.
+  assert.equal(
+    result.some(
+      (event) =>
+        event.type === "content_block_delta" &&
+        event.delta?.type === "text_delta" &&
+        typeof event.delta.text === "string" &&
+        event.delta.text.includes("prior reasoning summary unavailable")
+    ),
+    false
+  );
+  // The stop event still fires despite the placeholder-only final content.
+  const stop = result.find((event) => event.type === "message_delta");
+  assert.ok(stop, "expected a message_delta stop event even with placeholder-only final content");
+  assert.equal(stop.delta.stop_reason, "end_turn");
+  assert.ok(
+    result.some((event) => event.type === "message_stop"),
+    "expected a message_stop event"
+  );
 });
 
 test("OpenAI stream: tool calls strip Claude OAuth prefix and keep cache usage", () => {
@@ -317,7 +372,9 @@ test("OpenAI stream: XML <invoke> block in content becomes tool_use at finish", 
   // message_start → (no text block since all content was XML)
   assert.equal(result[0].type, "message_start");
   // At finish: tool_use content_block_start
-  const toolStart = result.find((e) => e.type === "content_block_start" && e.content_block?.type === "tool_use");
+  const toolStart = result.find(
+    (e) => e.type === "content_block_start" && e.content_block?.type === "tool_use"
+  );
   assert.ok(toolStart, "expected tool_use content_block_start");
   assert.equal(toolStart.content_block.name, "bash"); // normalized via REVERSE_MAP
   assert.deepEqual(toolStart.content_block.input, { command: "ls -la" });
@@ -355,7 +412,7 @@ test("OpenAI stream: XML invoke block across two streaming chunks", () => {
       choices: [
         {
           index: 0,
-          delta: { content: 'hosts</parameter></invoke>' },
+          delta: { content: "hosts</parameter></invoke>" },
           finish_reason: null,
         },
       ],
@@ -377,7 +434,9 @@ test("OpenAI stream: XML invoke block across two streaming chunks", () => {
   // Buffer should be cleared after chunk2
   assert.equal(state._xmlInvokeBuffer, "", "buffer cleared after complete block");
 
-  const toolStart = result.find((e) => e.type === "content_block_start" && e.content_block?.type === "tool_use");
+  const toolStart = result.find(
+    (e) => e.type === "content_block_start" && e.content_block?.type === "tool_use"
+  );
   assert.ok(toolStart, "expected tool_use content_block_start");
   assert.equal(toolStart.content_block.name, "read");
   assert.deepEqual(toolStart.content_block.input, { file_path: "/etc/hosts" });
@@ -428,13 +487,23 @@ test("OpenAI stream: text before XML block is emitted as text content", () => {
   const result = flatten([chunk1, chunk2, chunk3]);
 
   // "Checking..." should be emitted as text
-  const textDeltas = result.filter((e) => e.type === "content_block_delta" && e.delta?.type === "text_delta");
+  const textDeltas = result.filter(
+    (e) => e.type === "content_block_delta" && e.delta?.type === "text_delta"
+  );
   assert.ok(textDeltas.length > 0, "expected at least one text delta");
-  assert.ok(textDeltas.some((d) => d.delta.text.includes("Checking...")), "text before XML preserved");
-  assert.ok(textDeltas.some((d) => d.delta.text.includes("Done.")), "text after XML preserved");
+  assert.ok(
+    textDeltas.some((d) => d.delta.text.includes("Checking...")),
+    "text before XML preserved"
+  );
+  assert.ok(
+    textDeltas.some((d) => d.delta.text.includes("Done.")),
+    "text after XML preserved"
+  );
 
   // Tool call should still be emitted
-  const toolStart = result.find((e) => e.type === "content_block_start" && e.content_block?.type === "tool_use");
+  const toolStart = result.find(
+    (e) => e.type === "content_block_start" && e.content_block?.type === "tool_use"
+  );
   assert.ok(toolStart, "expected tool_use content_block_start");
   assert.equal(toolStart.content_block.name, "bash");
   assert.deepEqual(toolStart.content_block.input, { command: "date" });
