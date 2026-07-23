@@ -25,12 +25,19 @@ test.after(() => {
   fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
 });
 
-test("gpt-oss-120b-medium auto-picks antigravity provider via canonical deduplication", async () => {
+test("gpt-oss-120b-medium is ambiguous across antigravity and gemini-cli without a provider prefix", async () => {
+  // Both Antigravity and Gemini CLI advertise this model id. With no active
+  // credentials, bare-model resolution must refuse to auto-pick and ask for a
+  // provider/model prefix instead of guessing.
   const info = await getModelInfoCore("gpt-oss-120b-medium", null);
 
-  assert.equal(info.provider, "antigravity", `unexpected resolve: ${JSON.stringify(info)}`);
-  assert.equal(info.model, "gpt-oss-120b-medium");
-  assert.equal((info as Record<string, unknown>).errorType, undefined);
+  assert.equal(info.provider, null, `unexpected resolve: ${JSON.stringify(info)}`);
+  assert.equal((info as Record<string, unknown>).errorType, "ambiguous_model");
+  const candidates = (info as Record<string, unknown>).candidateProviders as string[];
+  assert.ok(Array.isArray(candidates));
+  assert.ok(candidates.includes("antigravity"), `candidates=${JSON.stringify(candidates)}`);
+  assert.ok(candidates.includes("gemini-cli"), `candidates=${JSON.stringify(candidates)}`);
+  assert.ok(candidates.length >= 2);
 });
 
 test("unprefixed model with no active providers falls back to ambiguous_model when multiple distinct providers exist", async () => {

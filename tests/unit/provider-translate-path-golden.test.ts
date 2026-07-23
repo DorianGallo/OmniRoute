@@ -67,6 +67,10 @@ function sanitize(headers: Record<string, unknown>): Record<string, unknown> {
       out[k] = "<PLATFORM>";
       continue;
     }
+    if (k === "X-Stainless-Runtime-Version") {
+      out[k] = "<NODE>";
+      continue;
+    }
     let s = v
       .replace(/Bearer .+/, "Bearer <TOK>")
       .replace(/sk-test-APIKEY|tok-test-ACCESS/g, "<CRED>")
