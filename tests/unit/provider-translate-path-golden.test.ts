@@ -59,12 +59,16 @@ function sanitize(headers: Record<string, unknown>): Record<string, unknown> {
       out[k] = "<ARCH>";
       continue;
     }
-    if (k === "X-Stainless-Os") {
+    if (k === "X-Stainless-Os" || k === "X-Stainless-OS") {
       out[k] = "<OS>";
       continue;
     }
     if (k === "X-PLATFORM") {
       out[k] = "<PLATFORM>";
+      continue;
+    }
+    if (k === "X-Stainless-Runtime-Version") {
+      out[k] = "<NODE>";
       continue;
     }
     let s = v

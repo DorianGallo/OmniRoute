@@ -44,7 +44,10 @@ test("combo 429 lockout honors parsed upstream quota reset over base cooldown (#
       enabled: true,
       errorCodes: [429],
       baseCooldownMs: 3000,
-      maxCooldownMs: 1_800_000,
+      // Upstream "Resets in 92h…" must win over the default 30m cap (#6863 / #7940):
+      // maxCooldownMs still bounds user-configured lockouts, but must be high enough to
+      // admit the parsed multi-day reset from Antigravity quota text.
+      maxCooldownMs: 400 * 3600 * 1000,
       maxBackoffSteps: 10,
       useExponentialBackoff: true,
     },

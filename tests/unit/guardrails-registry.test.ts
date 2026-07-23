@@ -176,7 +176,8 @@ test("pii masker guardrail redacts request and response payloads", async () => {
       const postBody = postCall?.modifiedResponse as ChatLikePayload;
       const redactedContent = String(postBody.choices?.[0]?.message?.content);
       assert.ok(
-        redactedContent.includes("[EMAIL_REDACTED]") || redactedContent.includes("[PHONE_REDACTED]"),
+        redactedContent.includes("[EMAIL_REDACTED]") ||
+          redactedContent.includes("[PHONE_REDACTED]"),
         "email or phone should be redacted in response"
       );
     }
@@ -199,7 +200,6 @@ test("pii masker does not rewrite request PII when redaction flag is off", async
     }
   );
 });
-
 
 test("guardrail registry fails open when a guardrail throws", async () => {
   class ExplodingGuardrail extends BaseGuardrail {

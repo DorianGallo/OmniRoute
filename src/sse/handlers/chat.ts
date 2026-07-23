@@ -75,6 +75,7 @@ import {
 } from "./chatHelpers";
 import {
   isAntigravityMissingProjectError,
+  PROVIDER_BREAKER_FAILURE_STATUSES,
   shouldTripProviderBreakerForResult,
 } from "./chatPredicates";
 import { connectionHasExtraKeys } from "@omniroute/open-sse/services/apiKeyRotator.ts";
@@ -226,7 +227,6 @@ function intersectAllowedConnectionIds(primary: unknown, secondary: unknown): st
 const comboPromoteDeps = { updateCombo, info: log.info, warn: log.warn };
 
 export { shouldTripProviderBreakerForResult } from "./chatPredicates";
-
 /**
  * Handle chat completion request
  * Supports: OpenAI, Claude, Gemini, OpenAI Responses API formats

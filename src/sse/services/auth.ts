@@ -137,7 +137,6 @@ function toNullableNumber(value: unknown): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-
 function toBooleanOrDefault(value: unknown, fallback: boolean): boolean {
   return typeof value === "boolean" ? value : fallback;
 }
@@ -611,7 +610,11 @@ function getP2CConnectionScore(
     quotaExhausted = isQuotaExhaustedForRequest(connection.id, provider, requestedModel);
   }
 
-  const quotaHeadroomPercent = getConnectionQuotaHeadroomPercent(provider, connection, requestedModel);
+  const quotaHeadroomPercent = getConnectionQuotaHeadroomPercent(
+    provider,
+    connection,
+    requestedModel
+  );
 
   let quotaPenalty = 0;
   if (quotaHeadroomPercent !== null) {
@@ -1585,7 +1588,8 @@ export async function getProviderCredentials(
         if (j >= i) j++;
         const a = candidatePool[i];
         const b = candidatePool[j];
-        connection = compareP2CConnections(provider, a, b, requestedModel, quotaResults) <= 0 ? a : b;
+        connection =
+          compareP2CConnections(provider, a, b, requestedModel, quotaResults) <= 0 ? a : b;
       }
     } else if (strategy === "random") {
       // Random: Fisher-Yates-inspired random pick

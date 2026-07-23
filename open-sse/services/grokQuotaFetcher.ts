@@ -181,7 +181,7 @@ function pickAuthEntry(file: Record<string, GrokAuthEntry>): ResolvedAuth | null
 
 function writeRefreshedTokens(
   entryId: string,
-  update: { access: string; refresh?: string; expiresAtIso: string },
+  update: { access: string; refresh?: string; expiresAtIso: string }
 ): void {
   const file = readAuthFile();
   if (!file || !file[entryId]) return;
@@ -395,7 +395,7 @@ function snapshotToQuotaInfo(snap: UsageSnapshot): QuotaInfo {
  */
 export async function fetchGrokWebQuota(
   connectionId: string,
-  _connection?: Record<string, unknown>,
+  _connection?: Record<string, unknown>
 ): Promise<QuotaInfo | null> {
   // Check cache first
   const cached = quotaCache.get(connectionId);

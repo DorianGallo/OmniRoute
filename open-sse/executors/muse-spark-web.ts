@@ -1,7 +1,6 @@
-import { createHash, randomUUID } from "node:crypto";
+import { createHash } from "node:crypto";
 import { Buffer } from "node:buffer";
 import WebSocket from "ws";
-
 import { BaseExecutor, mergeUpstreamExtraHeaders, type ExecuteInput } from "./base.ts";
 import { getRotatingApiKey } from "../services/apiKeyRotator.ts";
 import { prepareToolMessages, buildToolAwareResult } from "../translator/webTools.ts";
@@ -942,7 +941,7 @@ async function graphqlPost(
   } catch (err) {
     return {
       ok: false,
-      error: `${label} fetch failed: ${err instanceof Error ? err.message : String(err)}`,
+      error: `${label} fetch failed: ${sanitizeErrorMessage(err instanceof Error ? err.message : String(err))}`,
     };
   }
 }
