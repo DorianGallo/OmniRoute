@@ -189,7 +189,11 @@ test("getProviderConcurrencyCap resolves override -> static default -> fallback"
   );
   setProviderQuotaOverrides({ nvidia: { concurrency: 3 } });
   try {
-    assert.equal(getProviderConcurrencyCap("nvidia", 99), 3, "override wins over the static default");
+    assert.equal(
+      getProviderConcurrencyCap("nvidia", 99),
+      3,
+      "override wins over the static default"
+    );
   } finally {
     setProviderQuotaOverrides(null);
   }
@@ -214,20 +218,23 @@ test("semaphore.getStats reflects nvidia's per-connection gate key", async () =>
 // ── Failure-mode separation regression guard ────────────────────────────────
 
 test("nvidia 429 does not trip the provider circuit breaker (unchanged 408/500/502/503/504-only classification)", () => {
-  // This PR does not touch src/sse/handlers/chat.ts or the circuit breaker — this
-  // is a documentation-alignment guard proving Phase 1 didn't accidentally widen
-  // PROVIDER_BREAKER_FAILURE_STATUSES to include 429 (which would collapse the
+  // Source of truth lives in chatPredicates.ts (extracted from chat.ts). chat.ts
+  // re-exports the set for the single-model path. Guard both so Phase 1 cannot
+  // silently widen the breaker to include 429 (which would collapse the
   // per-model lockout this PR adds into a whole-connection/provider outage).
-  const chatHandlerPath = path.join(
-    process.cwd(),
-    "src",
-    "sse",
-    "handlers",
-    "chat.ts"
+  const predicatesPath = path.join(process.cwd(), "src", "sse", "handlers", "chatPredicates.ts");
+  const chatHandlerPath = path.join(process.cwd(), "src", "sse", "handlers", "chat.ts");
+  const predicatesSource = fs.readFileSync(predicatesPath, "utf8");
+  const chatSource = fs.readFileSync(chatHandlerPath, "utf8");
+  const match = predicatesSource.match(
+    /PROVIDER_BREAKER_FAILURE_STATUSES\s*=\s*new Set\(\[([^\]]+)\]\)/
   );
-  const source = fs.readFileSync(chatHandlerPath, "utf8");
-  const match = source.match(/PROVIDER_BREAKER_FAILURE_STATUSES\s*=\s*new Set\(\[([^\]]+)\]\)/);
-  assert.ok(match, "PROVIDER_BREAKER_FAILURE_STATUSES declaration found");
+  assert.ok(match, "PROVIDER_BREAKER_FAILURE_STATUSES declaration found in chatPredicates.ts");
+  assert.match(
+    chatSource,
+    /PROVIDER_BREAKER_FAILURE_STATUSES/,
+    "chat.ts must import/use PROVIDER_BREAKER_FAILURE_STATUSES"
+  );
   const statuses = match![1].split(",").map((s) => Number(s.trim()));
   assert.deepEqual(
     statuses.sort((a, b) => a - b),

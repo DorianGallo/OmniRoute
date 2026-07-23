@@ -74,6 +74,7 @@ import {
 } from "./chatHelpers";
 import {
   isAntigravityMissingProjectError,
+  PROVIDER_BREAKER_FAILURE_STATUSES,
   shouldTripProviderBreakerForResult,
 } from "./chatPredicates";
 import { connectionHasExtraKeys } from "@omniroute/open-sse/services/apiKeyRotator.ts";
@@ -215,7 +216,10 @@ function intersectAllowedConnectionIds(primary: unknown, secondary: unknown): st
 
 const comboPromoteDeps = { updateCombo, info: log.info, warn: log.warn };
 
-export { shouldTripProviderBreakerForResult } from "./chatPredicates";
+export {
+  PROVIDER_BREAKER_FAILURE_STATUSES,
+  shouldTripProviderBreakerForResult,
+} from "./chatPredicates";
 
 /**
  * Handle chat completion request

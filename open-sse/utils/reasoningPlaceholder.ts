@@ -12,9 +12,22 @@ export function isInternalReasoningPlaceholder(value: unknown): boolean {
 /**
  * Strip the internal placeholder from user-visible content. Models sometimes
  * echo the sentinel through ordinary `message.content` / `delta.content`
- * (#8081). Removes all occurrences and trims; returns "" when nothing
- * meaningful remains so callers can skip emission entirely.
+ * (#8081). Removes all occurrences; returns "" when nothing meaningful
+ * remains so callers can skip emission entirely. Does not trim around
+ * remaining text — streaming deltas rely on edge spaces as separators.
  */
 export function stripInternalReasoningPlaceholder(value: string): string {
-  return value.replaceAll(NON_ANTHROPIC_THINKING_PLACEHOLDER, "").trim();
+  // Remove every sentinel occurrence, but do NOT trim the remainder.
+  // Streaming deltas often carry leading/trailing spaces that are significant
+  // word separators ("Hello, " + "world."); trimming them glues tokens together
+  // on the client (#5786 A-guard regression).
+  //
+  // When the placeholder was the entire payload (optionally surrounded by
+  // whitespace), return "" so callers can skip emission. Otherwise preserve
+  // original spacing around any non-placeholder text.
+  if (typeof value !== "string" || value.length === 0) return "";
+  if (value.includes(NON_ANTHROPIC_THINKING_PLACEHOLDER) === false) return value;
+  const stripped = value.replaceAll(NON_ANTHROPIC_THINKING_PLACEHOLDER, "");
+  if (stripped.trim() === "") return "";
+  return stripped;
 }
