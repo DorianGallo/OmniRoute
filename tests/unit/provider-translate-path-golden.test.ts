@@ -59,7 +59,7 @@ function sanitize(headers: Record<string, unknown>): Record<string, unknown> {
       out[k] = "<ARCH>";
       continue;
     }
-    if (k === "X-Stainless-Os") {
+    if (k === "X-Stainless-Os" || k === "X-Stainless-OS") {
       out[k] = "<OS>";
       continue;
     }
