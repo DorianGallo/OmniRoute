@@ -36,12 +36,11 @@ test.after(() => {
   fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
 });
 
+type ProviderConnection = Awaited<ReturnType<typeof providersDb.getProviderConnections>>[number];
+
 async function oauthConns(provider: string) {
   const all = await providersDb.getProviderConnections({});
-  return all.filter(
-    (c: { provider?: string; authType?: string }) =>
-      c.provider === provider && c.authType === "oauth"
-  );
+  return all.filter((c: ProviderConnection) => c.provider === provider && c.authType === "oauth");
 }
 
 // GitHub Copilot: no top-level email, identity under providerSpecificData.
