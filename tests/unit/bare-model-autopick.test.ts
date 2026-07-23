@@ -1,5 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+
+const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-bare-autopick-"));
+process.env.DATA_DIR = TEST_DATA_DIR;
 
 import { getModelInfoCore } from "../../open-sse/services/model.ts";
 
