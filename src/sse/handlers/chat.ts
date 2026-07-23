@@ -227,7 +227,6 @@ function intersectAllowedConnectionIds(primary: unknown, secondary: unknown): st
 const comboPromoteDeps = { updateCombo, info: log.info, warn: log.warn };
 
 export { shouldTripProviderBreakerForResult } from "./chatPredicates";
-
 /**
  * Handle chat completion request
  * Supports: OpenAI, Claude, Gemini, OpenAI Responses API formats
