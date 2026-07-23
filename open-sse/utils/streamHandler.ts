@@ -247,7 +247,10 @@ export function createStreamController({
     try {
       trackPendingRequest(model || "", provider || "", connectionId ?? null, false);
     } catch (e) {
-      console.debug(`[STREAM-HANDLER] trackPendingRequest decrement failed:`, e);
+      console.error(
+        `[${getTimeString()}] [streamHandler] trackPendingRequest decrement failed — counter may drift`,
+        e
+      );
     }
   };
 
